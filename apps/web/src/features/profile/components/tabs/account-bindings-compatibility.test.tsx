@@ -122,6 +122,27 @@ function customOAuthStatus() {
   }
 }
 
+function incompleteOAuthStatus() {
+  return {
+    github_oauth: true,
+    discord_oauth: true,
+    oidc_enabled: true,
+    linuxdo_oauth: true,
+    telegram_oauth: true,
+    custom_oauth_providers: [
+      {
+        id: 43,
+        name: 'Incomplete SSO',
+        slug: 'incomplete-sso',
+        icon: 'link',
+        client_id: '',
+        authorization_endpoint: '',
+        scopes: 'openid',
+      },
+    ],
+  }
+}
+
 const profile: UserProfile = {
   id: 7,
   username: 'compat-user',
@@ -173,6 +194,37 @@ afterEach(() => {
 after(() => domWindow.close())
 
 describe('legacy Go account binding compatibility', () => {
+  test('hides OAuth binding actions whose required configuration is missing', async () => {
+    const status = incompleteOAuthStatus()
+    api.get = (async (url) => {
+      if (url === '/api/status') {
+        return { data: { success: true, data: status } }
+      }
+      return { data: { success: true, data: [] } }
+    }) as typeof api.get
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    queryClient.setQueryData(['status', 'anonymous'], status)
+    const { root } = await renderBindings(queryClient)
+
+    for (const provider of [
+      'GitHub',
+      'Discord',
+      'OIDC',
+      'LinuxDO',
+      'Telegram',
+      'Incomplete SSO',
+    ]) {
+      assert.equal(document.body.textContent?.includes(provider), false)
+    }
+    assert.equal(buttonsWithText('Bind').length, 0)
+
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
   test('does not render or call built-in unbind from stale capabilities after legacy status', async () => {
     const statusResponse = deferred<{
       data: { success: boolean; data: { github_oauth: boolean } }
