@@ -7139,6 +7139,7 @@
     "Unable to load token activity": "トークンアクティビティを読み込めません",
     "Unable to load unlock requests": "アクセス解除申請を読み込めません",
     "Unable to load your support tasks": "サポートタスクを読み込めません",
+    "Unable to open CC Switch": "CC Switchを開けません",
     "Unable to open chat": "チャットを開けません",
     "Unable to parse structured pricing": "構造化された価格を解析できません",
     "Unable to prepare API key": "API キーを準備できません",

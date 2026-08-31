@@ -7139,6 +7139,7 @@
     "Unable to load token activity": "Не удалось загрузить активность токенов",
     "Unable to load unlock requests": "Не удалось загрузить запросы на разблокировку",
     "Unable to load your support tasks": "Не удалось загрузить задачи поддержки",
+    "Unable to open CC Switch": "Не удалось открыть CC Switch",
     "Unable to open chat": "Не удалось открыть чат",
     "Unable to parse structured pricing": "Не удалось разобрать структурированные цены",
     "Unable to prepare API key": "Не удалось подготовить API-ключ",
