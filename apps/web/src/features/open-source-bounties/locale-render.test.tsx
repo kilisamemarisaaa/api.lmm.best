@@ -26,6 +26,8 @@ const project = {
   approved_challenge_count: 1,
   owner_rating_count: 0,
   updated_at: updatedAt,
+  owner_username: 'fixture-owner',
+  escrow_quota: 0,
 } as BountyProject
 const challenge = {
   status: 'submitted',
@@ -64,5 +66,49 @@ for (const { code } of INTERFACE_LANGUAGE_OPTIONS) {
       challenge.pull_request_url,
     ])
     assert.equal((timeline.match(/<time /g) ?? []).length, 2)
+  })
+}
+
+for (const compact of [false, true]) {
+  test(`bounty date fallback and resolved language work with compact=${compact}`, async () => {
+    const i18n = createInstance()
+    await i18n.use(initReactI18next).init({
+      lng: 'de-DE',
+      fallbackLng: 'fr',
+      resources: { fr: { translation: { Updated: 'Updated' } } },
+      interpolation: { escapeValue: false },
+    })
+    assert.equal(i18n.language, 'de-DE')
+    assert.equal(i18n.resolvedLanguage, 'fr')
+    const render = (updated_at: number) =>
+      renderToStaticMarkup(
+        <I18nextProvider i18n={i18n}>
+          <BountyDecision
+            project={{ ...project, updated_at }}
+            compact={compact}
+          />
+        </I18nextProvider>
+      )
+    const expected = new Date(updatedAt * 1000).toLocaleDateString('fr')
+    const html = render(updatedAt)
+    assert.ok(html.includes(`<dd>${expected}</dd>`))
+    assert.equal(
+      html.includes('Reviewed by the publisher: fixture-owner'),
+      !compact
+    )
+    for (const unknown of [0, -1, Number.NaN]) {
+      assert.ok(render(unknown).includes('<dd>Unknown</dd>'))
+    }
+    await i18n.init({
+      lng: 'invalid_locale',
+      fallbackLng: false,
+      resources: {},
+    })
+    assert.equal(i18n.resolvedLanguage, undefined)
+    assert.ok(
+      render(updatedAt).includes(
+        `<dd>${new Date(updatedAt * 1000).toLocaleDateString()}</dd>`
+      )
+    )
   })
 }
